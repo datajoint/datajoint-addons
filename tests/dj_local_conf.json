@@ -1,0 +1,11 @@
+{
+    "display.width": 14,
+    "safemode": true,
+    "database.host": "localhost",
+    "database.user": "datajoint",
+    "connection.init_function": null,
+    "loglevel": "DEBUG",
+    "display.limit": 7,
+    "database.password": "datajoint",
+    "database.port": 3306
+}

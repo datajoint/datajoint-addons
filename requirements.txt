@@ -1,0 +1,8 @@
+numpy
+pymysql
+pyparsing
+networkx
+matplotlib
+sphinx_rtd_theme
+mock
+gitpython

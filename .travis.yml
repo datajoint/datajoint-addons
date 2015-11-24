@@ -1,0 +1,15 @@
+language: python
+env:
+  - DJ_TEST_HOST="127.0.0.1" DJ_TEST_USER="root" DJ_TEST_PASSWORD="" DJ_HOST="127.0.0.1" DJ_USER="root" DJ_PASSWORD=""
+python:
+  - "3.4"
+services: mysql
+install:
+  - pip install -r requirements.txt
+  - pip install git+https://github.com/datajoint/datajoint-python.git
+  - pip install nose nose-cov python-coveralls
+# command to run tests
+script:
+  - nosetests -vv --with-coverage --cover-package=datajoint
+after_success:
+  - coveralls
