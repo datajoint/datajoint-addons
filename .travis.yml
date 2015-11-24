@@ -6,6 +6,7 @@ python:
 services: mysql
 install:
   - pip install -r requirements.txt
+  - pip install git+https://github.com/datajoint/datajoint-python.git
   - pip install nose nose-cov python-coveralls
 # command to run tests
 script:
