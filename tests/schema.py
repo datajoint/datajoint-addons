@@ -33,3 +33,16 @@ class Comp(dj.Computed):
         self.insert1(key)
 
 
+@schema
+@gitlog
+class Imp(dj.Imported):
+    definition = """
+    ->Index
+    ---
+    measurement : double
+    """
+
+    def _make_tuples(self, key):
+        key['measurement'] = np.random.randn()
+        self.insert1(key)
+

@@ -5,6 +5,7 @@ import datajoint as dj
 import os
 from datajoint import DataJointError
 
+
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
@@ -38,7 +39,25 @@ class GitLog:
 
 
     """
+
+    def __init__(self):
+        self.info = {}
+
     def __call__(self, cls):
+
+        path = inspect.getabsfile(cls).split('/')
+        for i in reversed(range(len(path))):
+            if os.path.exists('/'.join(path[:i]) + '/.git'):
+                repo = git.Repo()
+                break
+        else:
+            raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
+        sha1, branch = repo.head.commit.name_rev.split()
+        modified = (repo.git.status().find("modified") > 0) * 1
+        self.info[cls.__name__] = dict(
+            sha1=sha1, branch=branch, modified=modified
+        )
+
         class GitKey(dj.Part):
             definition = """
             ->%s
@@ -48,20 +67,9 @@ class GitLog:
             modified    : int   # whether there are modified files or not
             """ % (cls.__name__,)
 
-            def log_key(self, key):
-                path = inspect.getabsfile(cls).split('/')
-                for i in reversed(range(len(path))):
-                    if os.path.exists('/'.join(path[:i]) + '/.git'):
-                        repo = git.Repo()
-                        break
-                else:
-                    raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
-                sha1, branch = repo.head.commit.name_rev.split()
-                modified = (repo.git.status().find("modified") > 0) * 1
-                key['sha1'] = sha1
-                key['branch'] = branch
-                key['modified'] = modified
-                self.insert1(key)
+            def log_key(myself, key):
+                key.update(self.info[cls.__name__])
+                myself.insert1(key)
 
         cls.GitKey = GitKey
         cls._make_tuples = _log_git_status(cls._make_tuples)
