@@ -22,10 +22,10 @@ class TestRelation:
         """
 
         n = len(self.hdf)
-        self.hdf.to_hdf5('tmp.h5')
+        self.hdf.to_hdf5('/tmp/tmp.h5')
         self.hdf.delete()
-        self.hdf.read_hdf5('tmp.h5')
-        os.remove('tmp.h5')
+        self.hdf.read_hdf5('/tmp/tmp.h5')
+        os.remove('/tmp/tmp.h5')
 
         assert_equal(len(self.hdf), n, "Original and recovered length are not the same.")
 

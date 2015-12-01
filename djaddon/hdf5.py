@@ -32,8 +32,15 @@ def hdf5(cls):
         df.to_hdf(filepath, cls.__name__)
 
     def read_hdf5(self, filepath, **kwargs):
+        """
+        Read contents from hdf5 file into relation. Must haven been saved with `to_hdf5`.
+
+        Keyword arguments are passed on to insert.
+
+        :param filepath: path to the hdf5 file
+        """
         df = pd.read_hdf(filepath, cls.__name__)
-        self.insert([v.to_dict() for _, v in df.iterrows()])
+        self.insert([v.to_dict() for _, v in df.iterrows()], **kwargs)
 
     cls.to_hdf5 = to_hdf5
     cls.read_hdf5 = read_hdf5
