@@ -16,7 +16,7 @@ def _log_git_status(func):
     return with_logging
 
 
-class GitLog:
+def gitlog(cls):
     """
     Decorator that equips a datajoint class of the type datajoint.Computeed or datajoint.Imported with
     an additional datajoint. Part table that stores the current sha1, the branch, and whether the code
@@ -38,35 +38,33 @@ class GitLog:
 
 
     """
-    def __call__(self, cls):
-        class GitKey(dj.Part):
-            definition = """
-            ->%s
-            ---
-            sha1        : varchar(40)
-            branch      : varchar(50)
-            modified    : int   # whether there are modified files or not
-            """ % (cls.__name__,)
+    class GitKey(dj.Part):
+        definition = """
+        ->%s
+        ---
+        sha1        : varchar(40)
+        branch      : varchar(50)
+        modified    : int   # whether there are modified files or not
+        """ % (cls.__name__,)
 
-            def log_key(self, key):
-                path = inspect.getabsfile(cls).split('/')
-                for i in reversed(range(len(path))):
-                    if os.path.exists('/'.join(path[:i]) + '/.git'):
-                        repo = git.Repo()
-                        break
-                else:
-                    raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
-                sha1, branch = repo.head.commit.name_rev.split()
-                modified = (repo.git.status().find("modified") > 0) * 1
-                key['sha1'] = sha1
-                key['branch'] = branch
-                key['modified'] = modified
-                self.insert1(key)
+        def log_key(self, key):
+            path = inspect.getabsfile(cls).split('/')
+            for i in reversed(range(len(path))):
+                if os.path.exists('/'.join(path[:i]) + '/.git'):
+                    repo = git.Repo()
+                    break
+            else:
+                raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
+            sha1, branch = repo.head.commit.name_rev.split()
+            modified = (repo.git.status().find("modified") > 0) * 1
+            key['sha1'] = sha1
+            key['branch'] = branch
+            key['modified'] = modified
+            self.insert1(key)
 
-        cls.GitKey = GitKey
-        cls._make_tuples = _log_git_status(cls._make_tuples)
+    cls.GitKey = GitKey
+    cls._make_tuples = _log_git_status(cls._make_tuples)
 
-        return cls
+    return cls
 
 
-gitlog = GitLog()

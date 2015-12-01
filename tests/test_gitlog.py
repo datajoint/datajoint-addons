@@ -26,5 +26,7 @@ class TestRelation:
 
         self.comp.delete()
         self.comp.populate()
+
         assert_equal(len(self.comp), len(self.comp.GitKey()), "GitKey does not have the same length as master table")
+        assert_equal(len(self.comp), len(self.comp.GitKey()*self.comp), "GitKey does not have the same length as master table")
 
