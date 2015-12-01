@@ -18,6 +18,7 @@ class TestRelation:
 
     def __init__(self):
         self.comp = schema.Comp()
+        self.imp = schema.Imp()
 
     def test_contents(self):
         """
@@ -26,7 +27,15 @@ class TestRelation:
 
         self.comp.delete()
         self.comp.populate()
-
+        self.imp.delete()
+        self.imp.populate()
         assert_equal(len(self.comp), len(self.comp.GitKey()), "GitKey does not have the same length as master table")
-        assert_equal(len(self.comp), len(self.comp.GitKey()*self.comp), "GitKey does not have the same length as master table")
+        assert_equal(len(self.imp), len(self.imp.GitKey()), "GitKey does not have the same length as master table")
+
+    def test_decoration(self):
+        """
+        Tests whether GitKey classes are different
+        """
+
+        assert_true(self.comp.GitKey is not self.imp.GitKey, "GitKey ids are the same but should not")
 

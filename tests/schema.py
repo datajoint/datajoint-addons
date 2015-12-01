@@ -35,7 +35,6 @@ class Comp(dj.Computed):
         key['value'] = np.random.randn()
         self.insert1(key)
 
-
 @schema
 @hdf5
 class HDFTest(dj.Lookup):
@@ -52,3 +51,17 @@ class HDFTest(dj.Lookup):
         (0, 1., 'number 1', np.arange(5), np.random.randn(10, 2)),
         (1, 2., 'number 2', np.arange(5, 10), np.random.randn(10, 2)),
     ]
+
+@schema
+@gitlog
+class Imp(dj.Imported):
+    definition = """
+    ->Index
+    ---
+    measurement : double
+    """
+
+    def _make_tuples(self, key):
+        key['measurement'] = np.random.randn()
+        self.insert1(key)
+

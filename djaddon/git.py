@@ -5,6 +5,7 @@ import datajoint as dj
 import os
 from datajoint import DataJointError
 
+
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
@@ -61,6 +62,7 @@ def gitlog(cls):
             key['branch'] = branch
             key['modified'] = modified
             self.insert1(key)
+
 
     cls.GitKey = GitKey
     cls._make_tuples = _log_git_status(cls._make_tuples)
