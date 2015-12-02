@@ -1,5 +1,6 @@
 import pandas as pd
-
+import datajoint as dj
+from itertools import filterfalse
 
 def hdf5(cls):
     """
@@ -46,3 +47,19 @@ def hdf5(cls):
     cls.read_hdf5 = read_hdf5
 
     return cls
+
+
+def save2hdf5(filename, module):
+    """
+    Saves all elements from a given module that are subclasses of datajoint.BaseRelation.
+
+    The relations do not need to be decorated with the hdf5 decorator.
+
+    :param filename: filename to save to
+    :param module: module containing relations
+    """
+    for cls in map(lambda c: getattr(module, c), filterfalse(lambda x: x.startswith('__'), dir(module))):
+        if issubclass(cls, dj.BaseRelation):
+            print('Saving', cls.__name__)
+            klass = hdf5(cls)
+            klass().to_hdf5(filename)
