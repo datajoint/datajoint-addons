@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    gitlog.rst
+   hdf5.rst
 
 Indices and tables
 ==================

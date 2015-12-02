@@ -6,3 +6,5 @@ matplotlib
 sphinx_rtd_theme
 mock
 gitpython
+pandas
+tables
