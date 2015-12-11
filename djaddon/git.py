@@ -4,7 +4,7 @@ from functools import wraps
 import datajoint as dj
 import os
 from datajoint import DataJointError
-
+import datetime
 
 def _log_git_status(func):
     @wraps(func)
@@ -46,6 +46,7 @@ def gitlog(cls):
         sha1        : varchar(40)
         branch      : varchar(50)
         modified    : int   # whether there are modified files or not
+        head_date   : datetime # authored date of git head
         """ % (cls.__name__,)
 
         def log_key(self, key):
@@ -61,6 +62,7 @@ def gitlog(cls):
             key['sha1'] = sha1
             key['branch'] = branch
             key['modified'] = modified
+            key['head_date'] = datetime.datetime.fromtimestamp(repo.head.commit.authored_date)
             self.insert1(key)
 
 
