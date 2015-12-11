@@ -8,3 +8,4 @@ mock
 gitpython
 pandas
 tables
+slacker
