@@ -45,3 +45,41 @@ Adds the functions `to_hdf5` and `read_hdf5` to a relation. These functions can 
  class MyRelation(dj.Computed):
      definition = ...
 ```
+
+## slack.notify_user
+
+Decorator for `Computed` and `Imported` classes that notifies a user on slack via direct message that the `populate` is done. 
+
+```python
+import datajoint as dj
+from djaddon.slack import notify_user
+
+schema = dj.schema('datajoint_test',locals())
+
+@schema
+class Iterations(dj.Lookup):
+    definition = """
+    idx    : int
+    ---
+    """
+
+    contents = list(zip(range(10)))
+
+@schema
+@notify_user('fabee', '<your slack API token>')
+class Computations(dj.Computed):
+    definition = """
+    -> Iterations
+    ---
+    value      : float
+    """
+
+    def _make_tuples(self, key):
+        key['value'] = 2
+        self.insert1(key)
+
+
+if __name__=="__main__":
+    Computations().populate()
+
+```
