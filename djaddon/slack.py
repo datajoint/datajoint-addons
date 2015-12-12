@@ -36,7 +36,7 @@ class notify_user:
                     self.slack.chat.post_message(channel=ch.body['channel']['id'],
                                             text='Hey %s! Just to let you know. I am done with populating %s.'
                                                  % (self.user['name'], cls.__name__),
-                                            username='J.A.R.V.I.S.',
+                                            username='djbot',
                                             icon_emoji=':thought_balloon:')
                 self.slack.im.close(ch.body['channel']['id'])
 
