@@ -9,7 +9,7 @@ import datetime
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
-        with dj.conn().transaction:
+        with args[0].connection.transaction: # args[0] is self
             ret = func(*args, **kwargs)
             for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
                 args[0].GitKey().log_key(key)
