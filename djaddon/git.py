@@ -9,9 +9,10 @@ import datetime
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
-        ret = func(*args, **kwargs)
-        for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
-            args[0].GitKey().log_key(key)
+        with dj.conn().transaction:
+            ret = func(*args, **kwargs)
+            for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
+                args[0].GitKey().log_key(key)
         return ret
 
     return with_logging
@@ -19,10 +20,11 @@ def _log_git_status(func):
 
 def gitlog(cls):
     """
-    Decorator that equips a datajoint class of the type datajoint.Computeed or datajoint.Imported with
-    an additional datajoint. Part table that stores the current sha1, the branch, and whether the code
-    was modified since the last commit, for the class representing the master table. Use the instantiated
-    version of the decorator. Here is an example:
+    Decorator that equips a datajoint class with an additional datajoint.Part table that stores the current sha1,
+    the branch, the date of the head commit,and whether the code was modified since the last commit,
+    for the class representing the master table. Use the instantiated version of the decorator.
+
+    Here is an example:
 
     .. code-block:: python
        :linenos:
@@ -67,7 +69,7 @@ def gitlog(cls):
 
 
     cls.GitKey = GitKey
-    cls._make_tuples = _log_git_status(cls._make_tuples)
+    cls.insert1 = _log_git_status(cls.insert1)
 
     return cls
 
