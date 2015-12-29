@@ -23,11 +23,11 @@ class notify_user:
 
     def __call__(self, cls):
         assert issubclass(cls, (dj.Computed, dj.Imported)), "notify can only decorate Computed and Imported tables"
-        cls.__make_tuples = cls._make_tuples # move _make_tuples out of the way
+        cls._make_tuples_orig = cls._make_tuples # move _make_tuples out of the way
 
-        @wraps(cls.__make_tuples)
+        @wraps(cls._make_tuples_orig)
         def _make_tuples(itself, key):
-            itself.__make_tuples(key)
+            itself._make_tuples_orig(key)
             left, _ = itself.progress()
 
             if left == 0:
@@ -36,7 +36,7 @@ class notify_user:
                     self.slack.chat.post_message(channel=ch.body['channel']['id'],
                                             text='Hey %s! Just to let you know. I am done with populating %s.'
                                                  % (self.user['name'], cls.__name__),
-                                            username='J.A.R.V.I.S.',
+                                            username='djbot',
                                             icon_emoji=':thought_balloon:')
                 self.slack.im.close(ch.body['channel']['id'])
 
