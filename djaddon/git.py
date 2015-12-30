@@ -7,6 +7,7 @@ from datajoint import DataJointError
 import datetime
 import numpy as np
 from collections.abc import Mapping
+import warnings
 
 def get_key_for_tuple(tup, relation):
     if isinstance(tup, np.void) or isinstance(tup, Mapping):
@@ -74,6 +75,8 @@ def gitlog(cls):
                 raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
             sha1, branch = repo.head.commit.name_rev.split()
             modified = (repo.git.status().find("modified") > 0) * 1
+            if modified:
+                warning.warn('You have uncommited changes. Consider committing the changes before running populate.')
             key['sha1'] = sha1
             key['branch'] = branch
             key['modified'] = modified
