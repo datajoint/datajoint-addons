@@ -5,7 +5,7 @@ python:
   - "3.4"
 services: mysql
 install:
-  - sudo apt-get install -qq libhdf5-dev
+  - sudo apt-get install -qq libhdf5-serial-1.8.4
   - pip install -r requirements.txt
   - pip install git+https://github.com/datajoint/datajoint-python.git
   - pip install nose nose-cov python-coveralls
