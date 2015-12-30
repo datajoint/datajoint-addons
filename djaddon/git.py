@@ -76,7 +76,7 @@ def gitlog(cls):
             sha1, branch = repo.head.commit.name_rev.split()
             modified = (repo.git.status().find("modified") > 0) * 1
             if modified:
-                warning.warn('You have uncommited changes. Consider committing the changes before running populate.')
+                warnings.warn('You have uncommited changes. Consider committing the changes before running populate.')
             key['sha1'] = sha1
             key['branch'] = branch
             key['modified'] = modified
