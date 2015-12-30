@@ -9,7 +9,12 @@ import datetime
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
-        with dj.conn().transaction:
+        if not args[0].connection.in_transaction:
+            with args[0].connection.transaction:
+                ret = func(*args, **kwargs)
+                for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
+                    args[0].GitKey().log_key(key)
+        else: # let the outer transaction handle the error and rollback
             ret = func(*args, **kwargs)
             for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
                 args[0].GitKey().log_key(key)
