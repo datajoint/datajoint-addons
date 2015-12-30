@@ -6,8 +6,12 @@ python:
 services: mysql
 addons:
   apt:
+    sources:
+    - ubuntu-precise
     packages:
     - libhdf5-dev
+
+
 install:
   - pip install -r requirements.txt
   - pip install git+https://github.com/datajoint/datajoint-python.git
