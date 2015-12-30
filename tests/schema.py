@@ -36,7 +36,17 @@ class Comp(dj.Computed):
         self.insert1(key)
 
 @schema
+@gitlog
+class Man(dj.Manual):
+    definition = """
+    ->Index
+    ---
+    value : double
+    """
+
+@schema
 @hdf5
+@gitlog
 class HDFTest(dj.Lookup):
     definition = """
     idx     : int

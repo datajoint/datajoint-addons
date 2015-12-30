@@ -5,16 +5,29 @@ import datajoint as dj
 import os
 from datajoint import DataJointError
 import datetime
+import numpy as np
+from collections.abc import Mapping
+
+def get_key_for_tuple(tup, relation):
+    if isinstance(tup, np.void) or isinstance(tup, Mapping):
+        retval = {name:tup[name] for name in relation.heading.primary_key}
+    else:    # positional insert
+        retval = {name:val for name, val in zip(relation.heading, tup) if name in relation.heading.primary_key}
+    return retval
 
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
-        with args[0].connection.transaction: # args[0] is self
-            ret = func(*args, **kwargs)
-            for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
+        if not args[0].connection.in_transaction:
+            with args[0].connection.transaction:
+                ret = func(*args, **kwargs)
+                key = get_key_for_tuple(args[1], args[0])
                 args[0].GitKey().log_key(key)
+        else:
+            ret = func(*args, **kwargs)
+            key = get_key_for_tuple(args[1], args[0])
+            args[0].GitKey().log_key(key)
         return ret
-
     return with_logging
 
 
