@@ -4,8 +4,11 @@ env:
 python:
   - "3.4"
 services: mysql
+addons:
+  apt:
+    packages:
+    - libhdf5-dev
 install:
-  - sudo apt-get install libhdf5-dev
   - pip install -r requirements.txt
   - pip install git+https://github.com/datajoint/datajoint-python.git
   - pip install nose nose-cov python-coveralls
