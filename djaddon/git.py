@@ -81,7 +81,7 @@ def gitlog(cls):
             key['branch'] = branch
             key['modified'] = modified
             key['head_date'] = datetime.datetime.fromtimestamp(repo.head.commit.authored_date)
-            self.insert1(key)
+            self.insert1(key, skip_duplicates=True)
 
 
     cls.GitKey = GitKey
