@@ -8,6 +8,8 @@ addons:
   apt:
     sources:
     - ubuntu-precise
+addons:
+  apt:
     packages:
     - libhdf5-dev
 
