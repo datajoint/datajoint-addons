@@ -6,8 +6,6 @@ python:
 services: mysql
 addons:
   apt:
-    sources:
-    - ubuntu-trusty
     packages:
     - libhdf5-serial-dev
 
