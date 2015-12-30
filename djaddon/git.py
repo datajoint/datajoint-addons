@@ -7,7 +7,7 @@ from datajoint import DataJointError
 import datetime
 import numpy as np
 from collections.abc import Mapping
-import warnings
+import warnings 
 
 def get_key_for_tuple(tup, relation):
     if isinstance(tup, np.void) or isinstance(tup, Mapping):
