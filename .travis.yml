@@ -7,7 +7,7 @@ services: mysql
 addons:
   apt:
     sources:
-    - ubuntu-precise
+    - ubuntu-trusty
     packages:
     - libhdf5-serial-dev
 
