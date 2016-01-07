@@ -1,6 +1,10 @@
 import pandas as pd
 import datajoint as dj
 from itertools import filterfalse
+import h5py
+import importlib
+
+
 
 def hdf5(cls):
     """
@@ -41,15 +45,30 @@ def hdf5(cls):
         :param filepath: path to the hdf5 file
         """
         df = pd.read_hdf(filepath, cls.__name__)
-        self.insert([v.to_dict() for _, v in df.iterrows()], **kwargs)
+        self.insert( (row.to_dict() for _, row in df.iterrows()) , **kwargs)
+
+
 
     cls.to_hdf5 = to_hdf5
     cls.read_hdf5 = read_hdf5
 
     return cls
 
+def _ordered_hierarchy(classes):
+    if len(classes) == 0:
+        return
+    cls = classes[0]
+    c = cls()
+    erd = c.erd()
+    ancestors = [kls for kls in classes[1:] if kls().full_table_name in erd.ancestors(c.full_table_name)]
+    non_ancestors = [kls for kls in classes[1:] if kls not in ancestors]
 
-def save2hdf5(filename, module):
+    yield from _ordered_hierarchy(ancestors)
+    yield cls
+    yield from _ordered_hierarchy(non_ancestors)
+
+
+def to_hdf5(filename, module):
     """
     Saves all elements from a given module that are subclasses of datajoint.BaseRelation.
 
@@ -58,8 +77,34 @@ def save2hdf5(filename, module):
     :param filename: filename to save to
     :param module: module containing relations
     """
-    for cls in map(lambda c: getattr(module, c), filterfalse(lambda x: x.startswith('__'), dir(module))):
+    classes = [kls for kls in map(lambda c: getattr(module, c), filterfalse(lambda x: x.startswith('__'), dir(module)))
+               if issubclass(kls, dj.BaseRelation)]
+    assert len(classes) > 0, 'Nothing to save from this module'
+
+    classes[0]().connection.dependencies.load()
+
+    with h5py.File(filename) as fid:
+        fid.attrs['rebuild_order'] = ';'.join([str(kls).split("'")[1] for kls in _ordered_hierarchy(classes)])
+
+    for cls in classes:
         if issubclass(cls, dj.BaseRelation):
             print('Saving', cls.__name__)
             klass = hdf5(cls)
             klass().to_hdf5(filename)
+
+
+def from_hdf5(filename, **kwargs):
+    """
+    Rebuilds a database that has been saved with to_hdf5.
+
+    :param filename: hdf5 filename
+    :param kwargs: keyword arguemnts that will be passed to insert
+    """
+    with h5py.File(filename,'r') as fid:
+        rebuild_order = fid.attrs['rebuild_order'].split(';')
+
+    for path in rebuild_order:
+        module_name, class_name = path.rsplit(".", 1)
+        cls = getattr(importlib.import_module(module_name), class_name)
+        klass = hdf5(cls)
+        klass().read_hdf5(filename, **kwargs)
