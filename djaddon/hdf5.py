@@ -5,7 +5,6 @@ import h5py
 import importlib
 
 
-
 def hdf5(cls):
     """
     Decorator that equips a datajoint class with the ability to save and load it's data from hdf5.
@@ -45,14 +44,17 @@ def hdf5(cls):
         :param filepath: path to the hdf5 file
         """
         df = pd.read_hdf(filepath, cls.__name__)
-        self.insert( (row.to_dict() for _, row in df.iterrows()) , **kwargs)
 
-
+        for col in df.columns:
+            if 'datetime' in df.ftypes[col]:
+                df[col] = [str(d) for d in df[col]]
+        self.insert((r.to_dict() for _, r in df.iterrows()), **kwargs)
 
     cls.to_hdf5 = to_hdf5
     cls.read_hdf5 = read_hdf5
 
     return cls
+
 
 def _ordered_hierarchy(classes):
     if len(classes) == 0:
@@ -100,7 +102,7 @@ def from_hdf5(filename, **kwargs):
     :param filename: hdf5 filename
     :param kwargs: keyword arguemnts that will be passed to insert
     """
-    with h5py.File(filename,'r') as fid:
+    with h5py.File(filename, 'r') as fid:
         rebuild_order = fid.attrs['rebuild_order'].split(';')
 
     for path in rebuild_order:
