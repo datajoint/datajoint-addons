@@ -5,24 +5,40 @@ import datajoint as dj
 import os
 from datajoint import DataJointError
 import datetime
+import numpy as np
+from collections.abc import Mapping
+import warnings 
+
+def get_key_for_tuple(tup, relation):
+    if isinstance(tup, np.void) or isinstance(tup, Mapping):
+        retval = {name:tup[name] for name in relation.heading.primary_key}
+    else:    # positional insert
+        retval = {name:val for name, val in zip(relation.heading, tup) if name in relation.heading.primary_key}
+    return retval
 
 def _log_git_status(func):
     @wraps(func)
     def with_logging(*args, **kwargs):
-        ret = func(*args, **kwargs)
-        for key in (args[0] - args[0].GitKey()).project().fetch.as_dict:
+        if not args[0].connection.in_transaction:
+            with args[0].connection.transaction:
+                ret = func(*args, **kwargs)
+                key = get_key_for_tuple(args[1], args[0])
+                args[0].GitKey().log_key(key)
+        else:
+            ret = func(*args, **kwargs)
+            key = get_key_for_tuple(args[1], args[0])
             args[0].GitKey().log_key(key)
         return ret
-
     return with_logging
 
 
 def gitlog(cls):
     """
-    Decorator that equips a datajoint class of the type datajoint.Computeed or datajoint.Imported with
-    an additional datajoint. Part table that stores the current sha1, the branch, and whether the code
-    was modified since the last commit, for the class representing the master table. Use the instantiated
-    version of the decorator. Here is an example:
+    Decorator that equips a datajoint class with an additional datajoint.Part table that stores the current sha1,
+    the branch, the date of the head commit,and whether the code was modified since the last commit,
+    for the class representing the master table. Use the instantiated version of the decorator.
+
+    Here is an example:
 
     .. code-block:: python
        :linenos:
@@ -59,15 +75,17 @@ def gitlog(cls):
                 raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
             sha1, branch = repo.head.commit.name_rev.split()
             modified = (repo.git.status().find("modified") > 0) * 1
+            if modified:
+                warnings.warn('You have uncommited changes. Consider committing the changes before running populate.')
             key['sha1'] = sha1
             key['branch'] = branch
             key['modified'] = modified
             key['head_date'] = datetime.datetime.fromtimestamp(repo.head.commit.authored_date)
-            self.insert1(key)
+            self.insert1(key, skip_duplicates=True)
 
 
     cls.GitKey = GitKey
-    cls._make_tuples = _log_git_status(cls._make_tuples)
+    cls.insert1 = _log_git_status(cls.insert1)
 
     return cls
 

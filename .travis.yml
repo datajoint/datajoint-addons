@@ -4,13 +4,19 @@ env:
 python:
   - "3.4"
 services: mysql
+addons:
+  apt:
+    packages:
+    - libhdf5-serial-dev
+
+
 install:
-  - sudo apt-get install -qq libhdf5-serial-dev
   - pip install -r requirements.txt
   - pip install git+https://github.com/datajoint/datajoint-python.git
   - pip install nose nose-cov python-coveralls
+  - pip install h5py
 # command to run tests
 script:
-  - nosetests -vv --with-coverage --cover-package=datajoint
+  - nosetests -vv --with-coverage --cover-package=djaddon
 after_success:
   - coveralls

@@ -4,7 +4,7 @@ A collection of addons and nice-to-haves for datajoint-python
 
 ## gitlog
 
-A decorator for `dj.Computed` and `dj.Imported`. Here is an example how to use it
+A decorator for datajoint tables. Here is an example how to use it
 
 ```python
 
