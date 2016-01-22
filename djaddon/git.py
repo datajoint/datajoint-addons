@@ -69,7 +69,7 @@ def gitlog(cls):
             path = inspect.getabsfile(cls).split('/')
             for i in reversed(range(len(path))):
                 if os.path.exists('/'.join(path[:i]) + '/.git'):
-                    repo = git.Repo()
+                    repo = git.Repo('/'.join(path[:i]))
                     break
             else:
                 raise DataJointError("%s.GitKey could not find a .git directory for %s" % (cls.__name__, cls.__name__))
