@@ -1,3 +1,7 @@
+> ⚠️ **This repository is archived and no longer maintained.**
+> Abandoned addons package.
+> For current DataJoint development, see [datajoint-python](https://github.com/datajoint/datajoint-python).
+
 # datajoint-addons
 
 A collection of addons and nice-to-haves for datajoint-python
